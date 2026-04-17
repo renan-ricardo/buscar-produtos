@@ -1,0 +1,16 @@
+# Google
+gspread
+google-auth
+google-api-python-client
+
+# CLIP (OpenAI — local)
+git+https://github.com/openai/CLIP.git
+torch
+torchvision
+Pillow
+
+# Supabase
+supabase
+
+# Utilitários
+python-dotenv
