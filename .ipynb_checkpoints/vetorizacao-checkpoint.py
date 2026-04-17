@@ -22,7 +22,6 @@ sb        = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 print("Modelo carregado!\n")
 
 # ─── Busca produtos sem embedding ou para revetorizar ──────────
-# Passa argumento "revetorizar" para reprocessar todos
 revetorizar = len(sys.argv) > 1 and sys.argv[1] == "revetorizar"
 
 if revetorizar:
@@ -35,11 +34,8 @@ else:
 total = len(produtos)
 print(f"Total a processar: {total}\n")
 
-# ─── URL base das fotos no Supabase Storage ────────────────────
-STORAGE_URL = f"{os.getenv('SUPABASE_URL')}/storage/v1/object/public/produtos/"
-
-erros   = []
-ok      = 0
+erros = []
+ok    = 0
 
 for i, produto in enumerate(produtos, 1):
     produto_id = produto["produto_id"]
@@ -53,12 +49,15 @@ for i, produto in enumerate(produtos, 1):
         continue
 
     try:
-        foto_url = STORAGE_URL + foto_path
+        # ─── URL assinada (bucket privado) ─────────────────────
+        signed   = sb.storage.from_("produtos").create_signed_url(foto_path, 60)
+        foto_url = signed["signedURL"]
+
         response = requests.get(foto_url, timeout=15)
         response.raise_for_status()
 
         image  = Image.open(io.BytesIO(response.content)).convert("RGB")
-        image  = preprocessar(image)  # ← pré-processamento aplicado
+        image  = preprocessar(image)
         inputs = processor(images=image, return_tensors="pt")
 
         with torch.no_grad():
@@ -67,7 +66,6 @@ for i, produto in enumerate(produtos, 1):
             embedding = F.normalize(embedding, dim=-1)
             vetor     = embedding[0].tolist()
 
-        # Atualiza embedding no Supabase
         sb.table("produtos").update({"embedding": vetor}).eq("produto_id", produto_id).execute()
 
         print("✅")
