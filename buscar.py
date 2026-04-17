@@ -1,5 +1,6 @@
 # buscar.py
 import sys, os, json, requests, io, torch
+import torch.nn.functional as F
 from PIL import Image
 from transformers import CLIPProcessor, CLIPModel
 from supabase import create_client
@@ -22,7 +23,7 @@ inputs   = processor(images=image, return_tensors="pt")
 
 with torch.no_grad():
     embedding = model.get_image_features(**inputs)
-    embedding = embedding / embedding.norm(dim=-1, keepdim=True)
+    embedding = F.normalize(embedding, dim=-1)  # ✅ corrigido aqui
     vetor     = embedding[0].tolist()
 
 # Busca no Supabase

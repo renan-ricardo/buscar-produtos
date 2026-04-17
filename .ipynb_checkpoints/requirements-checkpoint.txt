@@ -14,3 +14,11 @@ supabase
 
 # Utilitários
 python-dotenv
+
+#Fast API
+fastapi
+uvicorn
+transformers
+supabase
+python-dotenv
+python-multipart

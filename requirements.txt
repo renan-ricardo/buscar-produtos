@@ -18,7 +18,7 @@ python-dotenv
 #Fast API
 fastapi
 uvicorn
-transformer
+transformers
 supabase
 python-dotenv
 python-multipart
